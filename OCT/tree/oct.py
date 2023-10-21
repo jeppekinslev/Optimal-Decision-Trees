@@ -9,7 +9,6 @@ import gurobipy as gp
 from gurobipy import GRB
 from sklearn import tree
 
-
 class optimalDecisionTreeClassifier:
     """
     optimal classification tree
@@ -133,8 +132,7 @@ class optimalDecisionTreeClassifier:
         # (21)
         m.addConstrs(L[t] <= N[t] - M[k,t] + self.n * c[k,t] for t in self.l_index for k in self.labels)
         # (17)
-        for i in range(self.n):
-            m.addConstrs(gp.quicksum((y.iloc[i] == k) * z[i,t]) == M[k,t]
+        m.addConstrs(gp.quicksum((y[i] == k) * z[i,t] for i in range(self.n)) == M[k,t]
                                  for t in self.l_index for k in self.labels)
         # (16)
         m.addConstrs(z.sum('*', t) == N[t] for t in self.l_index)
@@ -146,14 +144,14 @@ class optimalDecisionTreeClassifier:
             ta = t // 2
             while ta != 0:
                 if left:
-                    m.addConstrs(gp.quicksum(a[j,ta] * (x.iloc[i,j] + min_dis[j]) for j in range(self.p))
+                    m.addConstrs(gp.quicksum(a[j,ta] * (x[i,j] + min_dis[j]) for j in range(self.p))
                                  +
                                  (1 + np.max(min_dis)) * (1 - d[ta])
                                  <=
                                  b[ta] + (1 + np.max(min_dis)) * (1 - z[i,t])
                                  for i in range(self.n))
                 else:
-                    m.addConstrs(gp.quicksum(a[j,ta] * x.iloc[i,j] for j in range(self.p))
+                    m.addConstrs(gp.quicksum(a[j,ta] * x[i,j] for j in range(self.p))
                                  >=
                                  b[ta] - (1 - z[i,t])
                                  for i in range(self.n))
@@ -189,11 +187,9 @@ class optimalDecisionTreeClassifier:
         """
         min_dis = []
         for j in range(x.shape[1]):
-            xj = x.iloc[:,j]
+            xj = x[:,j]
             # drop duplicates
             xj = np.unique(xj)
-            # drop nan
-            xj = xj[~np.isnan(xj)]
             # sort
             xj = np.sort(xj)[::-1]
             # distance
