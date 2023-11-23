@@ -13,10 +13,11 @@ class multivariateOptimalDecisionTreeClassifier:
     """
     multivariate optimal classification tree
     """
-    def __init__(self, max_depth=3, min_samples_split=2, alpha=0, warmstart=True, timelimit=600, output=True):
+    def __init__(self, max_depth=3, min_samples_leaf=2, alpha=0, mu=0.005, warmstart=True, timelimit=600, output=True):
         self.max_depth = max_depth
-        self.min_samples_split = min_samples_split
+        self.min_samples_leaf = min_samples_leaf
         self.alpha = alpha
+        self.mu = mu
         self.warmstart = warmstart
         self.timelimit = timelimit
         self.output = output
@@ -106,12 +107,14 @@ class multivariateOptimalDecisionTreeClassifier:
         m.modelSense = GRB.MINIMIZE
 
         # variables
-        a = m.addVars(self.p, self.b_index, vtype=GRB.BINARY, name='a') # splitting feature
+        a = m.addVars(self.p, self.b_index, vtype=GRB.CONTINUOUS, name='a') # splitting feature
+        a_hat = m.addVars(self.p, self.b_index, vtype=GRB.BINARY, name='a_hat') # auxiliary variables
         b = m.addVars(self.b_index, vtype=GRB.CONTINUOUS, name='b') # splitting threshold
         c = m.addVars(self.labels, self.l_index, vtype=GRB.BINARY, name='c') # node prediction
         d = m.addVars(self.b_index, vtype=GRB.BINARY, name='d') # splitting option
         z = m.addVars(self.n, self.l_index, vtype=GRB.BINARY, name='z') # leaf node assignment
         l = m.addVars(self.l_index, vtype=GRB.BINARY, name='l') # leaf node activation
+        s = m.addVars(self.p, self.b_index, vtype=GRB.BINARY, name='s') # Features in splits
         L = m.addVars(self.l_index, vtype=GRB.CONTINUOUS, name='L') # leaf node misclassified
         M = m.addVars(self.labels, self.l_index, vtype=GRB.CONTINUOUS, name='M') # leaf node samples with label
         N = m.addVars(self.l_index, vtype=GRB.CONTINUOUS, name='N') # leaf node samples
@@ -123,7 +126,7 @@ class multivariateOptimalDecisionTreeClassifier:
         min_dis = self._calMinDist(x)
 
         # objective function
-        obj = L.sum() / baseline + self.alpha * d.sum()
+        obj = L.sum() / baseline + self.alpha * s.sum()
         m.setObjective(obj)
 
         # constraints
@@ -144,11 +147,11 @@ class multivariateOptimalDecisionTreeClassifier:
             ta = t // 2
             while ta != 0:
                 if left:
-                    m.addConstrs(gp.quicksum(a[j,ta] * (x[i,j] + min_dis[j]) for j in range(self.p))
+                    m.addConstrs(gp.quicksum(a[j,ta] * (x[i,j]) for j in range(self.p))
                                  +
-                                 (1 + np.max(min_dis)) * (1 - d[ta])
+                                 self.mu
                                  <=
-                                 b[ta] + (1 + np.max(min_dis)) * (1 - z[i,t])
+                                 b[ta] + (2 + self.mu) * (1 - z[i,t])
                                  for i in range(self.n))
                 else:
                     m.addConstrs(gp.quicksum(a[j,ta] * x[i,j] for j in range(self.p))
@@ -162,7 +165,7 @@ class multivariateOptimalDecisionTreeClassifier:
         # (6)
         m.addConstrs(z[i,t] <= l[t] for t in self.l_index for i in range(self.n))
         # (7)
-        m.addConstrs(z.sum('*', t) >= self.min_samples_split * l[t] for t in self.l_index)
+        m.addConstrs(z.sum('*', t) >= self.min_samples_leaf * l[t] for t in self.l_index)
         # (2)
         m.addConstrs(a.sum('*', t) == d[t] for t in self.b_index)
         # (3)
@@ -205,8 +208,8 @@ class multivariateOptimalDecisionTreeClassifier:
         set warm start from CART
         """
         # train with CART
-        if self.min_samples_split > 1:
-            clf = tree.DecisionTreeClassifier(max_depth=self.max_depth, min_samples_split=self.min_samples_split)
+        if self.min_samples_leaf > 1:
+            clf = tree.DecisionTreeClassifier(max_depth=self.max_depth, min_samples_leaf=self.min_samples_leaf)
         else:
             clf = tree.DecisionTreeClassifier(max_depth=self.max_depth)
         clf.fit(x, y)
