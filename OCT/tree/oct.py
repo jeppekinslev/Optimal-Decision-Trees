@@ -45,7 +45,7 @@ class optimalDecisionTreeClassifier:
         self.scales[self.scales == 0] = 1
 
         # solve MIP
-        m, a, b, c, d, l = self._buildMIP(x/self.scales, y)
+        m, a, b, c, d, z, l = self._buildMIP(x/self.scales, y)
         if self.warmstart:
             self._setStart(x, y, a, c, d, l)
         m.optimize()
@@ -56,6 +56,8 @@ class optimalDecisionTreeClassifier:
         self._b = {ind:b[ind].x for ind in b}
         self._c = {ind:c[ind].x for ind in c}
         self._d = {ind:d[ind].x for ind in d}
+        self._z = {ind:z[ind].x for ind in z}
+        self._l = {ind:l[ind].x for ind in l}
 
         self.trained = True
 
@@ -170,7 +172,7 @@ class optimalDecisionTreeClassifier:
         # (5)
         m.addConstrs(d[t] <= d[t//2] for t in self.b_index if t != 1)
 
-        return m, a, b, c, d, l
+        return m, a, b, c, d, z, l
 
     @staticmethod
     def _calBaseline(y):
