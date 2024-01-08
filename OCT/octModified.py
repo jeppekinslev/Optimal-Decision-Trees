@@ -169,9 +169,9 @@ class optimalDecisionTreeClassifier:
                 m.addConstr(d[t] <= l[ChildRight])
             else:
                 depth2 = int(np.log2(2*t))
-                ChildLeftLeft = 2**(self.max_depth - depth2) * 2 * t + 2**(self.max_depth - depth2) - 1
+                ChildLeftRight = 2**(self.max_depth - depth2) * 2 * t + 2**(self.max_depth - depth2) - 1
                 ChildRightRight = 2**(self.max_depth - depth2) * (2 * t + 1) + 2**(self.max_depth - depth2) - 1
-                m.addConstr(d[t] <= l[ChildLeftLeft])
+                m.addConstr(d[t] <= l[ChildLeftRight])
                 m.addConstr(d[t] <= l[ChildRightRight])
 
         # (8)
