@@ -1,0 +1,108 @@
+---
+title: "BScThesis"
+author: "JK"
+date: "2024-01-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+dataw <- read.csv("ResTrain.csv")
+
+dataw = dataw %>% mutate(set = "train", .before=instance)
+
+dataw = dataw %>% bind_rows(read.csv("ResTest.csv")) %>% mutate( set = case_when(is.na(set) ~ "test", TRUE ~ set) )
+
+dataw
+
+datal = dataw %>% pivot_longer(OCTWS:OCTWSModified,names_to = "model", values_to = "value")
+
+datal
+```
+Plot
+```{r}
+ggplot(datal,aes(depth,value,fill=model)) + geom_bar(stat = "identity", position=position_dodge()) + facet_grid(set ~ instance)
+
+ggsave("BscThesisPlot.pdf",device="pdf")
+
+ggplot(datal %>% filter(depth==1),aes(model,value,fill=model)) + geom_bar(stat = "identity", position=position_dodge()) + facet_grid(set ~ instance) + labs(title = "Depth = 1") + theme_bw()
+ggplot(datal %>% filter(depth==2),aes(model,value,fill=model)) + geom_bar(stat = "identity", position=position_dodge()) + facet_grid(set ~ instance) + labs(title = "Depth = 2")+ theme_bw()
+ggplot(datal %>% filter(depth==3),aes(model,value,fill=model)) + geom_bar(stat = "identity", position=position_dodge()) + facet_grid(set ~ instance) + labs(title = "Depth = 3")+ theme_bw()
+ggplot(datal %>% filter(depth==4),aes(model,value,fill=model)) + geom_bar(stat = "identity", position=position_dodge()) + facet_grid(set ~ instance) + labs(title = "Depth = 4")+ theme_bw()
+
+```
+
+Test
+```{r}
+datawtest = dataw %>% mutate(OCTWSvsCART = OCTWS-CART, OCTNoWSvsCART = OCTNoWS-CART, OCTWSModifiedvsCART = OCTWSModified-CART)	# Calculate difference between OCTWS and CART as well as OCTNoWS and CART
+
+
+# datawtest = datawtest %>% filter(depth<4)	# Exclude depth level 4
+datawtest = datawtest %>% filter(depth==4)	# Exclude depth level x
+
+# OCTWS
+# calculate number OCTWS > CART
+testdata = datawtest %>% filter(set=="test", OCTWSvsCART != 0) # only test and remove ties
+testdata
+
+# Binomial/sign test
+x = sum(testdata$OCTWSvsCART>0)
+n = nrow(testdata)
+binom.test(x,n, alternative = c("greater"))
+
+# calculate number OCTWS > CART
+testdata = datawtest %>% filter(set=="train", OCTWSvsCART != 0) # only training and remove ties
+testdata
+
+# Binomial/sign test
+x = sum(testdata$OCTWSvsCART>0)
+n = nrow(testdata)
+binom.test(x,n, alternative = c("greater"))
+
+#OCTnoWS
+# calculate number OCTNoWS > CART
+testdata = datawtest %>% filter(set=="test", OCTNoWSvsCART != 0) # only test and remove ties
+testdata
+
+# Binomial/sign test
+x = sum(testdata$OCTNoWSvsCART>0)
+n = nrow(testdata)
+binom.test(x,n , alternative = c("greater"))
+
+# calculate number OCTNoWS > CART
+testdata = datawtest %>% filter(set=="train", OCTNoWSvsCART != 0) # only training and remove ties
+testdata
+
+# Binomial/sign test
+x = sum(testdata$OCTNoWSvsCART>0)
+n = nrow(testdata)
+binom.test(x,n, alternative = c("greater"))
+
+#OCTWSModified
+# calculate number OCTWSModified > CART
+testdata = datawtest %>% filter(set=="test", OCTWSModifiedvsCART != 0) # only test and remove ties
+testdata
+
+# Binomial/sign test
+x = sum(testdata$OCTWSModifiedvsCART>0)
+n = nrow(testdata)
+binom.test(x,n, alternative = c("greater"))
+
+# calculate number OCTWSModified > CART
+testdata = datawtest %>% filter(set=="train", OCTWSModifiedvsCART != 0) # only test and remove ties
+testdata
+
+# Binomial/sign test
+x = sum(testdata$OCTWSModifiedvsCART>0)
+n = nrow(testdata)
+binom.test(x,n, alternative = c("greater"))
+```
+

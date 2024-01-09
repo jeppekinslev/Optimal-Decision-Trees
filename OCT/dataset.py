@@ -1,4 +1,4 @@
-# author: Jeppe
+# author: Jeppe Kinslev
 
 import pandas as pd
 from ucimlrepo import fetch_ucirepo

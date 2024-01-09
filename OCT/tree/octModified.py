@@ -9,7 +9,7 @@ import gurobipy as gp
 from gurobipy import GRB
 from sklearn import tree
 
-class optimalDecisionTreeClassifier:
+class optimalDecisionTreeClassifierModified:
     """
     optimal classification tree
     """
@@ -66,7 +66,7 @@ class optimalDecisionTreeClassifier:
         model prediction
         """
         if not self.trained:
-            raise AssertionError('This optimalDecisionTreeClassifier instance is not fitted yet.')
+            raise AssertionError('This optimalDecisionTreeClassifierModified instance is not fitted yet.')
 
         # leaf label
         labelmap = {}
@@ -162,17 +162,8 @@ class optimalDecisionTreeClassifier:
         # New constraints
         for t in self.b_index:
             depth = int(np.log2(t))
-            if self.max_depth - depth == 1:
-                ChildLeft = 2**(self.max_depth - depth) * t
-                ChildRight = 2**(self.max_depth - depth) * t + 1
-                m.addConstr(d[t] <= l[ChildLeft])
-                m.addConstr(d[t] <= l[ChildRight])
-            else:
-                depth2 = int(np.log2(2*t))
-                ChildLeftRight = 2**(self.max_depth - depth2) * 2 * t + 2**(self.max_depth - depth2) - 1
-                ChildRightRight = 2**(self.max_depth - depth2) * (2 * t + 1) + 2**(self.max_depth - depth2) - 1
-                m.addConstr(d[t] <= l[ChildLeftRight])
-                m.addConstr(d[t] <= l[ChildRightRight])
+            childs = [i for i in range(2**(self.max_depth - depth) * t,2**(self.max_depth - depth) * t + 2**(self.max_depth - depth))] 
+            m.addConstr(d[t] <= gp.quicksum(l[tc] for tc in childs))
 
         # (8)
         m.addConstrs(z.sum(i, '*') == 1 for i in range(self.n))

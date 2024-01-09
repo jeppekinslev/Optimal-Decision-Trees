@@ -1,0 +1,39 @@
+---
+title: "BScThesis"
+author: "JK"
+date: "2024-01-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+dataw <- read.csv("ResTrainTimeMean.csv")
+```
+
+Test
+```{r}
+datawtest = dataw %>% mutate(OCTWSvsOCTnoWS = OCTWS-OCTnoWS, OCTWSModifiedvsOCTWS = OCTWSModified-OCTWS)	# Calculate difference between OCTWS and CART as well as OCTNoWS and CART
+
+
+# datawtest = datawtest %>% filter(depth<4)	# Exclude depth level 4
+datawtest = datawtest %>% filter(depth==1)	# Exclude depth level x
+
+# OCTWSvsOCTnoWS
+# calculate number OCTWS > CART
+testdata = datawtest %>% filter(OCTWSModifiedvsOCTWS != 0) # only test and remove ties
+testdata
+
+# Binomial/sign test
+x = sum(testdata$OCTWSModifiedvsOCTWS>0)
+n = nrow(testdata)
+binom.test(x,n, alternative = c("less"))
+```
+

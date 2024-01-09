@@ -3,3 +3,5 @@
 # author: Bo Tang
 
 from .oct import optimalDecisionTreeClassifier
+from .octModified import optimalDecisionTreeClassifierModified
+
