@@ -24,7 +24,7 @@ datawtest = dataw %>% mutate(OCTWSvsOCTnoWS = OCTWS-OCTnoWS, OCTWSModifiedvsOCTW
 
 
 # datawtest = datawtest %>% filter(depth<4)	# Exclude depth level 4
-datawtest = datawtest %>% filter(depth==1)	# Exclude depth level x
+datawtest = datawtest %>% filter(depth==2)	# Exclude depth level d
 
 # OCTWSvsOCTnoWS
 # calculate number OCTWS > CART
