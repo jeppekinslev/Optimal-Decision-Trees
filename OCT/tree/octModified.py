@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
-# author: Bo Tang
+# author: Jeppe Kinslev
 
 from collections import namedtuple
 import numpy as np
@@ -162,8 +162,17 @@ class optimalDecisionTreeClassifierModified:
         # New constraints
         for t in self.b_index:
             depth = int(np.log2(t))
-            childs = [i for i in range(2**(self.max_depth - depth) * t,2**(self.max_depth - depth) * t + 2**(self.max_depth - depth))] 
-            m.addConstr(d[t] <= gp.quicksum(l[tc] for tc in childs))
+            if self.max_depth - depth == 1:
+                ChildLeft = 2**(self.max_depth - depth) * t
+                ChildRight = 2**(self.max_depth - depth) * t + 1
+                m.addConstr(d[t] <= l[ChildLeft])
+                m.addConstr(d[t] <= l[ChildRight])
+            else:
+                depth2 = int(np.log2(2*t))
+                ChildLeftRight = 2**(self.max_depth - depth2) * 2 * t + 2**(self.max_depth - depth2) - 1
+                ChildRightRight = 2**(self.max_depth - depth2) * (2 * t + 1) + 2**(self.max_depth - depth2) - 1
+                m.addConstr(d[t] <= l[ChildLeftRight])
+                m.addConstr(d[t] <= l[ChildRightRight])
 
         # (8)
         m.addConstrs(z.sum(i, '*') == 1 for i in range(self.n))

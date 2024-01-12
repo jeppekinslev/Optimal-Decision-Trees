@@ -1,7 +1,7 @@
 ---
-title: "BScThesis"
+title: "StatRes"
 author: "JK"
-date: "2024-01-06"
+date: "2024-01-12"
 output: html_document
 ---
 
