@@ -12,6 +12,18 @@ The OCT and OCTModified models used in the thesis are found in the folder tree.
 
 Data sets are retrieved by the file dataset.py from the ucimlrepo package.
 
+Data sets:
+- [Breast Cancer](https://archive.ics.uci.edu/dataset/14/breast+cancer)
+- [Car Evaluation](https://archive.ics.uci.edu/dataset/19/car+evaluation)
+- [Credit Approval](https://archive.ics.uci.edu/dataset/27/credit+approval)
+- [Heart Disease](https://archive.ics.uci.edu/dataset/45/heart+disease)
+- [Ionosphere](https://archive.ics.uci.edu/dataset/52/ionosphere)
+- [Iris](https://archive.ics.uci.edu/dataset/53/iris)
+- [Mushroom](https://archive.ics.uci.edu/dataset/73/mushroom)
+- [Statlog (German Credit Data)](https://archive.ics.uci.edu/dataset/144/statlog+german+credit+data)
+- [Wine](https://archive.ics.uci.edu/dataset/109/wine)
+- [Zoo](https://archive.ics.uci.edu/dataset/111/zoo)
+
 Results are calculated using the two jupyter notebooks Result.ipynb and ResultMean.ipynb
 
 Tables for the thesis were created with the jupyter notebook TableVisualization.ipynb
